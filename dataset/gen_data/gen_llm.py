@@ -7,6 +7,18 @@ from tqdm import tqdm
 from openai import OpenAI
 from config import CONFIG
 
+INPUT_DIR = "/root/twofacett/dataset/raw_data/"
+OUTPUT_PATH = "/root/twofacett/dataset/benchmark_data/gen_llm.json"
+
+LLM_TYPE = "gpt-4.1-mini"
+
+DATASET_FILES = [
+    "arxiv.json",
+    "writing_prompt.json",
+    "xsum.json",
+    "yelp_review.json",
+]
+
 # ====== API Setup ======
 client = OpenAI(
     api_key = CONFIG.OPENAI_API_KEY,
@@ -65,24 +77,12 @@ def infer_prompt(domain, prompt, sentence_num):
     }
     return prompt_list[domain]
 
-def main():
-    input_dir = "/root/twofacett/dataset/raw_data/"
-    output_path = "/root/twofacett/dataset/benchmark_data/gen_llm.json"
-
-    llm_type = "gpt-4.1-mini"
-
-    dataset_files = [
-        "arxiv.json",
-        "writing_prompt.json",
-        "xsum.json",
-        "yelp_review.json",
-    ]
-
+def main():    
     fout = []
     idx = 0
-    for fname in dataset_files:
+    for fname in DATASET_FILES:
 
-        full_input_path = os.path.join(input_dir, fname)
+        full_input_path = os.path.join(INPUT_DIR, fname)
         print(f"\n=== Processing {full_input_path} ===")
 
         domain, prompt_key, human_key = infer_domain_keys(fname)
@@ -96,23 +96,48 @@ def main():
             sentence_num = count_sentence(item[human_key])
             prompt = infer_prompt(domain, item[prompt_key], sentence_num)
 
-            llm_text = gen_llm_text(prompt, model=llm_type)
+            llm_text = gen_llm_text(prompt, model=LLM_TYPE)
 
             new_entry = {
                 "id": idx,
                 "human_text": item[human_key],
                 "llm_text": llm_text,
-                "llm_type": llm_type,
+                "llm_type": LLM_TYPE,
                 "domain": domain,
             }
 
             fout.append(new_entry)
 
-    write_json(output_path, fout)
+    write_json(OUTPUT_PATH, fout)
 
-    print("\nDone! Saved merged LLM dataset to", output_path)
+    print("\nDone! Saved merged LLM dataset to", OUTPUT_PATH)
 
 if __name__ == "__main__":
 
     main()
+    data = read_json(OUTPUT_PATH)
+    for item in data:
+        if item["llm_text"] is None:
+            print(item["id"], type(item["id"]))
+
+            domain = item["domain"]
+            sentence_num = count_sentence(item["human_text"])
+
+            for fname in DATASET_FILES:
+                if domain in fname:
+                    raw_data = read_json(os.path.join(INPUT_DIR, fname))
+                    for r in raw_data:
+                        if r["id"] == item["id"] % 2500:
+                            raw_item = r
+                            break
+
+                    _, prompt_key, _ = infer_domain_keys(fname)
+                    break
+
+            prompt = infer_prompt(item["domain"], raw_item[prompt_key], sentence_num)
+            item["llm_text"] = gen_llm_text(prompt, model=LLM_TYPE)
+
+    write_json(OUTPUT_PATH, data)
+
+
     
