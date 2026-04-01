@@ -238,13 +238,14 @@ def detection(text, model):
 
 # === run detection ===
 dataloader = DataLoader()
-data = dataloader.load_data(option = "train_min", type = "mix", domain = "arxiv", level = 0)
-data += dataloader.load_data(option = "train_min", type = "mix", domain = "arxiv", level = 4)
-labels = [0] * 150 + [1] * 150
+data = dataloader.load_data(option = "test_min", type = "mix", domain = "arxiv", level = 0)
+data += dataloader.load_data(option = "test_min", type = "mix", domain = "arxiv", level = 4)
+labels = [0] * 50 + [1] * 50
 
 results = []
 scores = []
 id = 1
+'''
 for item in tqdm(data):
 
     text = item["text"]
@@ -264,19 +265,24 @@ for item in tqdm(data):
     id += 1
     scores.append(score)
 
-with open("dna_gpt_mix_arxiv_testmin_0and4.json", "w", encoding="utf-8") as f:
+with open("dna_gpt_mix_arxiv_test_min_0and4.json", "w", encoding="utf-8") as f:
     json.dump(results, f, indent=2, ensure_ascii=False)
-    
+'''
+
+with open("dna_gpt_mix_arxiv_test_min_0and4.json", "r", encoding="utf-8") as f:
+    results = json.load(f)
+
+for item in results:
+    scores.append(item["score"])
+
+
 evaluator = Evaluator()
-evaluation_result = evaluator.evaluate(
-    scores=scores,
-    labels=labels
-)
+detection_result = evaluator.detection(scores, labels, 0.0004363050090469819)
 
 
 
 
 
-print(evaluation_result)
+print(detection_result)
 
 print("✅ Detection finished!")
