@@ -186,7 +186,10 @@ def detection(text, model):
         gen_text = generated_texts[i]
 
         ###### optional #######
-        gen_text_ = truncate_string_by_words(gen_text, max_words-150)
+        if gen_text == None:
+            gen_text_ = ""
+        else:
+            gen_text_ = truncate_string_by_words(gen_text, max_words-150)
 
         gpt_generate_tokens = tokenize(gen_text_, stemmer=stemmer)
         if len(input_remaining_tokens) == 0 or len(gpt_generate_tokens) == 0:
@@ -238,9 +241,12 @@ def detection(text, model):
 
 # === run detection ===
 dataloader = DataLoader()
-data = dataloader.load_data(option = "train_min", type = "mix", domain = "arxiv", level = 0)
-data += dataloader.load_data(option = "train_min", type = "mix", domain = "arxiv", level = 4)
-labels = [0] * 150 + [1] * 150
+data = dataloader.load_data(option = "train_min", type = "iter", domain = "writingprompts", level = 0)
+data += dataloader.load_data(option = "train_min", type = "iter", domain = "writingprompts", level = 1)
+data += dataloader.load_data(option = "train_min", type = "iter", domain = "writingprompts", level = 2)
+data += dataloader.load_data(option = "train_min", type = "iter", domain = "writingprompts", level = 3)
+data += dataloader.load_data(option = "train_min", type = "iter", domain = "writingprompts", level = 4)
+labels = [0] * 150 + [1] * 600
 
 results = []
 scores = []
@@ -264,7 +270,7 @@ for item in tqdm(data):
     id += 1
     scores.append(score)
 
-with open("dna_gpt_mix_arxiv_testmin_0and4.json", "w", encoding="utf-8") as f:
+with open("dna_gpt_iter_writingprompts_train_min_01234.json", "w", encoding="utf-8") as f:
     json.dump(results, f, indent=2, ensure_ascii=False)
     
 evaluator = Evaluator()

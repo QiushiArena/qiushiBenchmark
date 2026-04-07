@@ -117,16 +117,22 @@ class Evaluator:
         FN = np.sum((preds == 0) & (labels == 1))
 
         acc = (TP + TN) / (TP + TN + FP + FN + 1e-8)
+        precision = TP / (TP + FP + 1e-8)
         recall = TP / (TP + FN + 1e-8)
+        f1 = 2 * TP / (2 * TP + FP + FN + 1e-8)
 
         print("Accuracy:", acc)
         print("Recall:", recall)
+        print("Precision:", precision)
+        print("F1:", f1)
 
         return {
             "auc": float(auc),
             "threshold": float(best_threshold),
             "accuracy": float(acc),
-            "recall": float(recall)
+            "recall": float(recall),
+            "precision": float(precision),
+            "f1": float(f1)
         }
 
     def detection(self, scores, labels, threshold=0.5):
