@@ -41,7 +41,7 @@ class DetectGPT:
     # ===== log likelihood =====
     def get_ll(self, text):
         with torch.no_grad():
-            tok = self.base_tokenizer(text, return_tensors="pt").to(DEVICE)
+            tok = self.base_tokenizer(text, return_tensors="pt", truncation=True, max_length=1024).to(DEVICE)
             loss = self.base_model(**tok, labels=tok["input_ids"]).loss
         return -loss.item()
 
@@ -132,11 +132,11 @@ class DetectGPT:
 detector = DetectGPT()
 
 dataloader = DataLoader()
-data = dataloader.load_data(option = "train_min", type = "mix", domain = "arxiv", level = 0)
-data += dataloader.load_data(option = "train_min", type = "mix", domain = "arxiv", level = 1)
-data += dataloader.load_data(option = "train_min", type = "mix", domain = "arxiv", level = 2)
-data += dataloader.load_data(option = "train_min", type = "mix", domain = "arxiv", level = 3)
-data += dataloader.load_data(option = "train_min", type = "mix", domain = "arxiv", level = 4)
+data = dataloader.load_data(option = "train_min", type = "mix", domain = "writingprompts", level = 0)
+data += dataloader.load_data(option = "train_min", type = "mix", domain = "writingprompts", level = 1)
+data += dataloader.load_data(option = "train_min", type = "mix", domain = "writingprompts", level = 2)
+data += dataloader.load_data(option = "train_min", type = "mix", domain = "writingprompts", level = 3)
+data += dataloader.load_data(option = "train_min", type = "mix", domain = "writingprompts", level = 4)
 labels = [0] * 150 + [1] * 600
 
 results = []
@@ -160,7 +160,7 @@ for item in tqdm(data):
     id += 1
     scores.append(score)
 
-with open("gpt_mix_arxiv_train_min_01234.json", "w", encoding="utf-8") as f:
+with open("gpt_mix_writingprompts_train_min_01234.json", "w", encoding="utf-8") as f:
     json.dump(results, f, indent=2, ensure_ascii=False)
     
 evaluator = Evaluator()
