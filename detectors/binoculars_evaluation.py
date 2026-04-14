@@ -4,6 +4,9 @@ import numpy as np
 import torch
 import transformers
 from transformers import AutoModelForCausalLM, AutoTokenizer
+from detectors.common import DataLoader, Evaluator
+from tqdm import tqdm
+import json
 
 torch.set_grad_enabled(False)
 
@@ -125,5 +128,55 @@ def binoculars_score(text: str) -> float:
     score 越小 → 越像 Human
     要取负号
     """
-    model = get_binoculars()
+    model = Binoculars()
     return -float(model.compute_score(text))
+
+
+
+dataloader = DataLoader()
+data = dataloader.load_data(option = "train_min", type = "iter", domain = "writingprompts", level = 0)
+data += dataloader.load_data(option = "train_min", type = "iter", domain = "writingprompts", level = 1)
+data += dataloader.load_data(option = "train_min", type = "iter", domain = "writingprompts", level = 2)
+data += dataloader.load_data(option = "train_min", type = "iter", domain = "writingprompts", level = 3)
+data += dataloader.load_data(option = "train_min", type = "iter", domain = "writingprompts", level = 4)
+labels = [0] * 150 + [1] * 600
+
+results = []
+scores = []
+id = 1
+for item in tqdm(data):
+
+    text = item["text"]
+    
+    
+    score = binoculars_score(
+        text
+    )
+    
+    results.append({
+        "id": id,
+        "text": text,
+        "score": score,
+        "domain": item["domain"],
+    })
+    id += 1
+    scores.append(score)
+
+with open("b_iter_writingprompts_train_min_01234.json", "w", encoding="utf-8") as f:
+    json.dump(results, f, indent=2, ensure_ascii=False)
+    
+evaluator = Evaluator()
+evaluation_result = evaluator.evaluate(
+    scores=scores,
+    labels=labels
+)
+
+
+
+
+
+print(evaluation_result)
+
+print("✅ Detection finished!")
+
+
