@@ -32,10 +32,10 @@ scores_1 = scores[0:150] + scores[150:300]
 with open("fast_data/iterate_results.json", "r", encoding="utf-8") as f:
     results = json.load(f)    
 
-scores_1 = [s["human"]["criterion"] for s in results if (s["domain"] == "yelp_review")] + [s["llm_iterations"]["1"]["criterion"] for s in results if (s["domain"] == "yelp_review")]
-scores_2 = [s["human"]["criterion"] for s in results if (s["domain"] == "yelp_review")] + [s["llm_iterations"]["2"]["criterion"] for s in results if (s["domain"] == "yelp_review")]
-scores_3 = [s["human"]["criterion"] for s in results if (s["domain"] == "yelp_review")] + [s["llm_iterations"]["3"]["criterion"] for s in results if (s["domain"] == "yelp_review")]
-scores_4 = [s["human"]["criterion"] for s in results if (s["domain"] == "yelp_review")] + [s["llm_iterations"]["4"]["criterion"] for s in results if (s["domain"] == "yelp_review")]
+scores_1 = [s["human"]["ai_prob"] for s in results if (s["domain"] == "writing_prompt")] + [s["llm_iterations"]["1"]["ai_prob"] for s in results if (s["domain"] == "writing_prompt")]
+scores_2 = [s["human"]["ai_prob"] for s in results if (s["domain"] == "writing_prompt")] + [s["llm_iterations"]["2"]["ai_prob"] for s in results if (s["domain"] == "writing_prompt")]
+scores_3 = [s["human"]["ai_prob"] for s in results if (s["domain"] == "writing_prompt")] + [s["llm_iterations"]["3"]["ai_prob"] for s in results if (s["domain"] == "writing_prompt")]
+scores_4 = [s["human"]["ai_prob"] for s in results if (s["domain"] == "writing_prompt")] + [s["llm_iterations"]["4"]["ai_prob"] for s in results if (s["domain"] == "writing_prompt")]
 
 evaluator = Evaluator()
 detection_result_1 = evaluator.evaluate(scores_1, labels)

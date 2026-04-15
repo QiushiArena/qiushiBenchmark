@@ -1,166 +1,204 @@
-from typing import Union
+from typing import Union, List
 import os
 import numpy as np
 import torch
-import transformers
 from transformers import AutoModelForCausalLM, AutoTokenizer
-import torch
-import transformers
-
-ce_loss_fn = torch.nn.CrossEntropyLoss(reduction="none")
-softmax_fn = torch.nn.Softmax(dim=-1)
-
 
 torch.set_grad_enabled(False)
 
-huggingface_config = {
-    # Only required for private models from Huggingface (e.g. LLaMA models)
-    "TOKEN": os.environ.get("HF_TOKEN", None)
-}
+# ======================
+# config
+# ======================
+HF_TOKEN = os.environ.get("HF_TOKEN", None)
+DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
-# selected using Falcon-7B and Falcon-7B-Instruct at bfloat16
-BINOCULARS_ACCURACY_THRESHOLD = 0.9015310749276843  # optimized for f1-score
-BINOCULARS_FPR_THRESHOLD = 0.8536432310785527  # optimized for low-fpr [chosen at 0.01%]
-
-DEVICE_1 = "cuda:0" if torch.cuda.is_available() else "cpu"
-DEVICE_2 = "cuda:1" if torch.cuda.device_count() > 1 else DEVICE_1
+BINOCULARS_ACCURACY_THRESHOLD = 0.9015310749276843
+BINOCULARS_FPR_THRESHOLD = 0.8536432310785527
 
 
-def assert_tokenizer_consistency(model_id_1, model_id_2):
-    identical_tokenizers = (
-            AutoTokenizer.from_pretrained(model_id_1).vocab
-            == AutoTokenizer.from_pretrained(model_id_2).vocab
-    )
-    if not identical_tokenizers:
-        raise ValueError(f"Tokenizers are not identical for {model_id_1} and {model_id_2}.")
+# ======================
+# utils
+# ======================
+def perplexity(encodings, logits):
+    shift_logits = logits[..., :-1, :].contiguous()
+    shift_labels = encodings.input_ids[..., 1:].contiguous()
+    shift_mask = encodings.attention_mask[..., 1:].contiguous()
+
+    loss_fct = torch.nn.CrossEntropyLoss(reduction="none")
+    loss = loss_fct(shift_logits.transpose(1, 2), shift_labels)
+
+    ppl = (loss * shift_mask).sum(1) / shift_mask.sum(1)
+    return ppl.detach().cpu().numpy()
 
 
-def perplexity(encoding: transformers.BatchEncoding,
-               logits: torch.Tensor,
-               median: bool = False,
-               temperature: float = 1.0):
-    shifted_logits = logits[..., :-1, :].contiguous() / temperature
-    shifted_labels = encoding.input_ids[..., 1:].contiguous()
-    shifted_attention_mask = encoding.attention_mask[..., 1:].contiguous()
+def entropy(p_logits, q_logits, encodings, pad_token_id):
+    """
+    正确实现：H(p, q) = - sum p log q
+    """
+    p = torch.softmax(p_logits, dim=-1)
+    log_q = torch.log_softmax(q_logits, dim=-1)
 
-    if median:
-        ce_nan = (ce_loss_fn(shifted_logits.transpose(1, 2), shifted_labels).
-                  masked_fill(~shifted_attention_mask.bool(), float("nan")))
-        ppl = np.nanmedian(ce_nan.cpu().float().numpy(), 1)
+    ce = -(p * log_q).sum(dim=-1)
 
-    else:
-        ppl = (ce_loss_fn(shifted_logits.transpose(1, 2), shifted_labels) *
-               shifted_attention_mask).sum(1) / shifted_attention_mask.sum(1)
-        ppl = ppl.to("cpu").float().numpy()
+    mask = (encodings.input_ids != pad_token_id).float()
+    ce = (ce * mask).sum(1) / mask.sum(1)
 
-    return ppl
+    return ce.detach().cpu().numpy()
 
 
-def entropy(p_logits: torch.Tensor,
-            q_logits: torch.Tensor,
-            encoding: transformers.BatchEncoding,
-            pad_token_id: int,
-            median: bool = False,
-            sample_p: bool = False,
-            temperature: float = 1.0):
-    vocab_size = p_logits.shape[-1]
-    total_tokens_available = q_logits.shape[-2]
-    p_scores, q_scores = p_logits / temperature, q_logits / temperature
+# ======================
+# main class
+# ======================
+class Binoculars:
+    def __init__(
+        self,
+        observer_model: str = "tiiuae/falcon-7b",
+        performer_model: str = "tiiuae/falcon-7b-instruct",
+        max_length: int = 512,
+        use_bfloat16: bool = True,
+        mode: str = "low-fpr",
+    ):
+        self.device = DEVICE
 
-    p_proba = softmax_fn(p_scores).view(-1, vocab_size)
+        dtype = torch.bfloat16 if use_bfloat16 else torch.float32
 
-    if sample_p:
-        p_proba = torch.multinomial(p_proba.view(-1, vocab_size), replacement=True, num_samples=1).view(-1)
+        print("🔄 Loading models...")
 
-    q_scores = q_scores.view(-1, vocab_size)
+        self.observer = AutoModelForCausalLM.from_pretrained(
+            observer_model,
+            torch_dtype=dtype,
+            device_map="auto",
+            trust_remote_code=True,
+            token=HF_TOKEN,
+        )
 
-    ce = ce_loss_fn(input=q_scores, target=p_proba).view(-1, total_tokens_available)
-    padding_mask = (encoding.input_ids != pad_token_id).type(torch.uint8)
+        self.performer = AutoModelForCausalLM.from_pretrained(
+            performer_model,
+            torch_dtype=dtype,
+            device_map="auto",
+            trust_remote_code=True,
+            token=HF_TOKEN,
+        )
 
-    if median:
-        ce_nan = ce.masked_fill(~padding_mask.bool(), float("nan"))
-        agg_ce = np.nanmedian(ce_nan.cpu().float().numpy(), 1)
-    else:
-        agg_ce = (((ce * padding_mask).sum(1) / padding_mask.sum(1)).to("cpu").float().numpy())
+        self.observer.eval()
+        self.performer.eval()
 
-    return agg_ce
-
-
-class Binoculars(object):
-    def __init__(self,
-                 observer_name_or_path: str = "tiiuae/falcon-7b",
-                 performer_name_or_path: str = "tiiuae/falcon-7b-instruct",
-                 use_bfloat16: bool = True,
-                 max_token_observed: int = 512,
-                 mode: str = "low-fpr",
-                 ) -> None:
-        assert_tokenizer_consistency(observer_name_or_path, performer_name_or_path)
-
-        self.change_mode(mode)
-        self.observer_model = AutoModelForCausalLM.from_pretrained(observer_name_or_path,
-                                                                   device_map={"": DEVICE_1},
-                                                                   trust_remote_code=True,
-                                                                   torch_dtype=torch.bfloat16 if use_bfloat16
-                                                                   else torch.float32,
-                                                                   token=huggingface_config["TOKEN"]
-                                                                   )
-        self.performer_model = AutoModelForCausalLM.from_pretrained(performer_name_or_path,
-                                                                    device_map={"": DEVICE_2},
-                                                                    trust_remote_code=True,
-                                                                    torch_dtype=torch.bfloat16 if use_bfloat16
-                                                                    else torch.float32,
-                                                                    token=huggingface_config["TOKEN"]
-                                                                    )
-        self.observer_model.eval()
-        self.performer_model.eval()
-
-        self.tokenizer = AutoTokenizer.from_pretrained(observer_name_or_path)
-        if not self.tokenizer.pad_token:
+        self.tokenizer = AutoTokenizer.from_pretrained(observer_model)
+        if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
-        self.max_token_observed = max_token_observed
 
-    def change_mode(self, mode: str) -> None:
+        self.max_length = max_length
+
+        self.set_mode(mode)
+
+    # ======================
+    # mode
+    # ======================
+    def set_mode(self, mode: str):
         if mode == "low-fpr":
             self.threshold = BINOCULARS_FPR_THRESHOLD
         elif mode == "accuracy":
             self.threshold = BINOCULARS_ACCURACY_THRESHOLD
         else:
-            raise ValueError(f"Invalid mode: {mode}")
+            raise ValueError("mode must be 'low-fpr' or 'accuracy'")
 
-    def _tokenize(self, batch: list[str]) -> transformers.BatchEncoding:
-        batch_size = len(batch)
-        encodings = self.tokenizer(
-            batch,
+    # ======================
+    # tokenize
+    # ======================
+    def _tokenize(self, texts: List[str]):
+        return self.tokenizer(
+            texts,
             return_tensors="pt",
-            padding="longest" if batch_size > 1 else False,
+            padding=True,
             truncation=True,
-            max_length=self.max_token_observed,
-            return_token_type_ids=False).to(self.observer_model.device)
-        return encodings
+            max_length=self.max_length,
+        ).to(self.observer.device)
 
+    # ======================
+    # forward
+    # ======================
     @torch.inference_mode()
-    def _get_logits(self, encodings: transformers.BatchEncoding) -> torch.Tensor:
-        observer_logits = self.observer_model(**encodings.to(DEVICE_1)).logits
-        performer_logits = self.performer_model(**encodings.to(DEVICE_2)).logits
-        if DEVICE_1 != "cpu":
-            torch.cuda.synchronize()
-        return observer_logits, performer_logits
+    def _get_logits(self, encodings):
+        obs_logits = self.observer(**encodings).logits
+        perf_logits = self.performer(**encodings).logits
+        return obs_logits, perf_logits
 
-    def compute_score(self, input_text: Union[list[str], str]) -> Union[float, list[float]]:
-        batch = [input_text] if isinstance(input_text, str) else input_text
-        encodings = self._tokenize(batch)
-        observer_logits, performer_logits = self._get_logits(encodings)
-        ppl = perplexity(encodings, performer_logits)
-        x_ppl = entropy(observer_logits.to(DEVICE_1), performer_logits.to(DEVICE_1),
-                        encodings.to(DEVICE_1), self.tokenizer.pad_token_id)
-        binoculars_scores = ppl / x_ppl
-        binoculars_scores = binoculars_scores.tolist()
-        return binoculars_scores[0] if isinstance(input_text, str) else binoculars_scores
+    # ======================
+    # core score
+    # ======================
+    def compute_score(self, texts: Union[str, List[str]]):
+        single = isinstance(texts, str)
+        batch = [texts] if single else texts
 
-    def predict(self, input_text: Union[list[str], str]) -> Union[list[str], str]:
-        binoculars_scores = np.array(self.compute_score(input_text))
-        pred = np.where(binoculars_scores < self.threshold,
-                        "Most likely AI-generated",
-                        "Most likely human-generated"
-                        ).tolist()
-        return pred
+        enc = self._tokenize(batch)
+        obs_logits, perf_logits = self._get_logits(enc)
+
+        ppl = perplexity(enc, perf_logits)
+        xent = entropy(obs_logits, perf_logits, enc, self.tokenizer.pad_token_id)
+
+        eps = 1e-8
+        score = np.log(ppl + eps) - np.log(xent + eps)
+
+        return score[0] if single else score.tolist()
+
+    # ======================
+    # predict
+    # ======================
+    def predict(self, texts: Union[str, List[str]]):
+        scores = self.compute_score(texts)
+        scores = np.array([scores] if isinstance(scores, float) else scores)
+
+        preds = np.where(
+            scores < self.threshold,
+            "Most likely AI-generated",
+            "Most likely human-generated"
+        )
+
+        return preds[0] if isinstance(texts, str) else preds.tolist()
+
+    # ======================
+    # batch inference helper
+    # ======================
+    def score_dataset(self, dataset, batch_size=8):
+        scores = []
+        for i in range(0, len(dataset), batch_size):
+            batch = dataset[i:i+batch_size]
+            scores.extend(self.compute_score(batch))
+        return scores
+
+
+dataloader = DataLoader()
+data = dataloader.load_data(option = "train_min", type = "mix", domain = "writingprompts", level = 0)
+#data += dataloader.load_data(option = "train_min", type = "mix", domain = "writingprompts", level = 1)
+#data += dataloader.load_data(option = "train_min", type = "mix", domain = "writingprompts", level = 2)
+#data += dataloader.load_data(option = "train_min", type = "mix", domain = "writingprompts", level = 3)
+data += dataloader.load_data(option = "train_min", type = "mix", domain = "writingprompts", level = 4)
+labels = [0] * 150 + [1] * 150
+
+
+model = Binoculars()
+scores = []
+results = []
+id = 1
+for item in tqdm(data):
+
+    text = item["text"]
+    score = model.compute_score(text)
+
+    results.append({
+        "id": id,
+        "text": text,
+        "score": score,
+        "domain": item["domain"],
+    })
+    id += 1
+    scores.append(score)
+
+with open("b_mix_writingprompts_train_min_04.json", "w", encoding="utf-8") as f:
+    json.dump(results, f, indent=2, ensure_ascii=False)
+    
+evaluator = Evaluator()
+evaluation_result = evaluator.evaluate(
+    scores=scores,
+    labels=labels
+)
