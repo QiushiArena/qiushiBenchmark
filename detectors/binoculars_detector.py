@@ -172,11 +172,13 @@ class Binoculars:
 
 
 dataloader = DataLoader()
+
 data = dataloader.load_data(option = "train_min", type = "mix", domain = "xsum", level = 0)
 data += dataloader.load_data(option = "train_min", type = "mix", domain = "xsum", level = 1)
 data += dataloader.load_data(option = "train_min", type = "mix", domain = "xsum", level = 2)
 data += dataloader.load_data(option = "train_min", type = "mix", domain = "xsum", level = 3)
 data += dataloader.load_data(option = "train_min", type = "mix", domain = "xsum", level = 4)
+
 labels = [0] * 150 + [1] * 600
 
 
@@ -197,6 +199,7 @@ for item in tqdm(data):
     })
     id += 1
     scores.append(score)
+
 
 with open("b_mix_xsum_train_min_01234.json", "w", encoding="utf-8") as f:
     json.dump(results, f, indent=2, ensure_ascii=False)
