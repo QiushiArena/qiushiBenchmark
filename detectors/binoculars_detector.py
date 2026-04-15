@@ -172,11 +172,11 @@ class Binoculars:
 
 
 dataloader = DataLoader()
-data = dataloader.load_data(option = "train_min", type = "mix", domain = "writingprompts", level = 0)
-data += dataloader.load_data(option = "train_min", type = "mix", domain = "writingprompts", level = 1)
-data += dataloader.load_data(option = "train_min", type = "mix", domain = "writingprompts", level = 2)
-data += dataloader.load_data(option = "train_min", type = "mix", domain = "writingprompts", level = 3)
-data += dataloader.load_data(option = "train_min", type = "mix", domain = "writingprompts", level = 4)
+data = dataloader.load_data(option = "train_min", type = "mix", domain = "xsum", level = 0)
+data += dataloader.load_data(option = "train_min", type = "mix", domain = "xsum", level = 1)
+data += dataloader.load_data(option = "train_min", type = "mix", domain = "xsum", level = 2)
+data += dataloader.load_data(option = "train_min", type = "mix", domain = "xsum", level = 3)
+data += dataloader.load_data(option = "train_min", type = "mix", domain = "xsum", level = 4)
 labels = [0] * 150 + [1] * 600
 
 
@@ -187,7 +187,7 @@ id = 1
 for item in tqdm(data):
 
     text = item["text"]
-    score = model.compute_score(text)
+    score = -model.compute_score(text)
 
     results.append({
         "id": id,
@@ -198,7 +198,7 @@ for item in tqdm(data):
     id += 1
     scores.append(score)
 
-with open("b_mix_writingprompts_train_min_01234.json", "w", encoding="utf-8") as f:
+with open("b_mix_xsum_train_min_01234.json", "w", encoding="utf-8") as f:
     json.dump(results, f, indent=2, ensure_ascii=False)
     
 evaluator = Evaluator()
