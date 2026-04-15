@@ -173,11 +173,11 @@ class Binoculars:
 
 dataloader = DataLoader()
 
-data = dataloader.load_data(option = "train_min", type = "mix", domain = "xsum", level = 0)
-data += dataloader.load_data(option = "train_min", type = "mix", domain = "xsum", level = 1)
-data += dataloader.load_data(option = "train_min", type = "mix", domain = "xsum", level = 2)
-data += dataloader.load_data(option = "train_min", type = "mix", domain = "xsum", level = 3)
-data += dataloader.load_data(option = "train_min", type = "mix", domain = "xsum", level = 4)
+data = dataloader.load_data(option = "train_min", type = "iter", domain = "arxiv", level = 0)
+data += dataloader.load_data(option = "train_min", type = "iter", domain = "arxiv", level = 1)
+data += dataloader.load_data(option = "train_min", type = "iter", domain = "arxiv", level = 2)
+data += dataloader.load_data(option = "train_min", type = "iter", domain = "arxiv", level = 3)
+data += dataloader.load_data(option = "train_min", type = "iter", domain = "arxiv", level = 4)
 
 labels = [0] * 150 + [1] * 600
 
