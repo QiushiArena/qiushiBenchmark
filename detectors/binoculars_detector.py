@@ -3,6 +3,10 @@ import os
 import numpy as np
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
+from detectors.common import DataLoader, Evaluator
+from tqdm import tqdm
+import json
+
 
 torch.set_grad_enabled(False)
 
@@ -28,7 +32,7 @@ def perplexity(encodings, logits):
     loss = loss_fct(shift_logits.transpose(1, 2), shift_labels)
 
     ppl = (loss * shift_mask).sum(1) / shift_mask.sum(1)
-    return ppl.detach().cpu().numpy()
+    return ppl.detach().float().cpu().numpy()
 
 
 def entropy(p_logits, q_logits, encodings, pad_token_id):
@@ -43,7 +47,7 @@ def entropy(p_logits, q_logits, encodings, pad_token_id):
     mask = (encodings.input_ids != pad_token_id).float()
     ce = (ce * mask).sum(1) / mask.sum(1)
 
-    return ce.detach().cpu().numpy()
+    return ce.detach().float().cpu().numpy()
 
 
 # ======================
@@ -139,7 +143,7 @@ class Binoculars:
         eps = 1e-8
         score = np.log(ppl + eps) - np.log(xent + eps)
 
-        return score[0] if single else score.tolist()
+        return float(score[0]) if single else [float(x) for x in score]
 
     # ======================
     # predict
@@ -169,11 +173,11 @@ class Binoculars:
 
 dataloader = DataLoader()
 data = dataloader.load_data(option = "train_min", type = "mix", domain = "writingprompts", level = 0)
-#data += dataloader.load_data(option = "train_min", type = "mix", domain = "writingprompts", level = 1)
-#data += dataloader.load_data(option = "train_min", type = "mix", domain = "writingprompts", level = 2)
-#data += dataloader.load_data(option = "train_min", type = "mix", domain = "writingprompts", level = 3)
+data += dataloader.load_data(option = "train_min", type = "mix", domain = "writingprompts", level = 1)
+data += dataloader.load_data(option = "train_min", type = "mix", domain = "writingprompts", level = 2)
+data += dataloader.load_data(option = "train_min", type = "mix", domain = "writingprompts", level = 3)
 data += dataloader.load_data(option = "train_min", type = "mix", domain = "writingprompts", level = 4)
-labels = [0] * 150 + [1] * 150
+labels = [0] * 150 + [1] * 600
 
 
 model = Binoculars()
@@ -194,7 +198,7 @@ for item in tqdm(data):
     id += 1
     scores.append(score)
 
-with open("b_mix_writingprompts_train_min_04.json", "w", encoding="utf-8") as f:
+with open("b_mix_writingprompts_train_min_01234.json", "w", encoding="utf-8") as f:
     json.dump(results, f, indent=2, ensure_ascii=False)
     
 evaluator = Evaluator()
