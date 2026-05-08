@@ -160,7 +160,7 @@ for item in tqdm(data):
     id += 1
     scores.append(score)
 
-with open("gpt_iter_writingprompts_train_min_01234.json", "w", encoding="utf-8") as f:
+with open("gpt_iter_writingprompts_train_min.json", "w", encoding="utf-8") as f:
     json.dump(results, f, indent=2, ensure_ascii=False)
     
 evaluator = Evaluator()
