@@ -2,6 +2,8 @@ import os
 import time
 import torch
 import torch.nn.functional as F
+import json
+from tqdm import tqdm
 from detectors.common import DataLoader, Evaluator
 
 from transformers import (
@@ -227,13 +229,13 @@ class FastDetectGPT:
 # ============================================================
 # Demo
 # ============================================================
-
-dataloader = FastDetectGPT()
-data = dataloader.load_data(option = "train_min", type = "iter", domain = "writingprompts", level = 0)
-data += dataloader.load_data(option = "train_min", type = "iter", domain = "writingprompts", level = 1)
-data += dataloader.load_data(option = "train_min", type = "iter", domain = "writingprompts", level = 2)
-data += dataloader.load_data(option = "train_min", type = "iter", domain = "writingprompts", level = 3)
-data += dataloader.load_data(option = "train_min", type = "iter", domain = "writingprompts", level = 4)
+detector = FastDetectGPT()
+dataloader = DataLoader()
+data = dataloader.load_data(option = "train_min", type = "mix", domain = "writingprompts", level = 0)
+data += dataloader.load_data(option = "train_min", type = "mix", domain = "writingprompts", level = 1)
+data += dataloader.load_data(option = "train_min", type = "mix", domain = "writingprompts", level = 2)
+data += dataloader.load_data(option = "train_min", type = "mix", domain = "writingprompts", level = 3)
+data += dataloader.load_data(option = "train_min", type = "mix", domain = "writingprompts", level = 4)
 labels = [0] * 150 + [1] * 600
 
 results = []
@@ -243,9 +245,8 @@ for item in tqdm(data):
     text = item["text"]
     model = "gpt-4.1-mini"
     
-    _, score = detection(
-        text,
-        model
+    score = detector.detect(
+        text
     )
     
     results.append({
@@ -257,7 +258,7 @@ for item in tqdm(data):
     id += 1
     scores.append(score)
 
-with open("fast_gpt_iter_writingprompts_train_min.json", "w", encoding="utf-8") as f:
+with open("fast_gpt_mix_writingprompts_train_min.json", "w", encoding="utf-8") as f:
     json.dump(results, f, indent=2, ensure_ascii=False)
     
 evaluator = Evaluator()
