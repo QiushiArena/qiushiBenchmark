@@ -1,0 +1,278 @@
+{
+  "mix": {
+    "arxiv": {
+      "1": {
+        "auc": 0.4838,
+        "threshold": -0.4954,
+        "accuracy": 0.5233,
+        "recall": 0.6333,
+        "precision": 0.5191,
+        "f1": 0.5706
+      },
+      "2": {
+        "auc": 0.4772,
+        "threshold": -0.6084,
+        "accuracy": 0.5100,
+        "recall": 0.6667,
+        "precision": 0.5076,
+        "f1": 0.5764
+      },
+      "3": {
+        "auc": 0.5192,
+        "threshold": -0.08838,
+        "accuracy": 0.5400,
+        "recall": 0.5667,
+        "precision": 0.5380,
+        "f1": 0.5519
+      },
+      "4": {
+        "auc": 0.5954,
+        "threshold": -0.3784,
+        "accuracy": 0.6033,
+        "recall": 0.7733,
+        "precision": 0.5771,
+        "f1": 0.6610
+      }
+    },
+    "wp": {
+      "1": {
+        "auc": 0.5244,
+        "threshold": -0.3472,
+        "accuracy": 0.5400,
+        "recall": 0.5800,
+        "precision": 0.5370,
+        "f1": 0.5577
+      },
+      "2": {
+        "auc": 0.6201,
+        "threshold": 0.1293,
+        "accuracy": 0.6033,
+        "recall": 0.5133,
+        "precision": 0.6260,
+        "f1": 0.5641
+      },
+      "3": {
+        "auc": 0.7839,
+        "threshold": 0.7271,
+        "accuracy": 0.7267,
+        "recall": 0.6067,
+        "precision": 0.7982,
+        "f1": 0.6894
+      },
+      "4": {
+        "auc": 0.8987,
+        "threshold": 0.8252,
+        "accuracy": 0.8333,
+        "recall": 0.8000,
+        "precision": 0.8571,
+        "f1": 0.8276
+      }
+    },
+    "xsum": {
+      "1": {
+        "auc": 0.4712,
+        "threshold": -0.7451,
+        "accuracy": 0.5167,
+        "recall": 0.8733,
+        "precision": 0.5097,
+        "f1": 0.6437
+      },
+      "2": {
+        "auc": 0.4744,
+        "threshold": 2.3848,
+        "accuracy": 0.5133,
+        "recall": 0.02667,
+        "precision": 1.0000,
+        "f1": 0.05195
+      },
+      "3": {
+        "auc": 0.5558,
+        "threshold": 0.3689,
+        "accuracy": 0.5533,
+        "recall": 0.5000,
+        "precision": 0.5597,
+        "f1": 0.5282
+      },
+      "4": {
+        "auc": 0.5983,
+        "threshold": 0.1790,
+        "accuracy": 0.5900,
+        "recall": 0.6800,
+        "precision": 0.5763,
+        "f1": 0.6239
+      }
+    },
+    "yelp": {
+      "1": {
+        "auc": 0.4824,
+        "threshold": 1.2021,
+        "accuracy": 0.5167,
+        "recall": 0.09333,
+        "precision": 0.6087,
+        "f1": 0.1618
+      },
+      "2": {
+        "auc": 0.6643,
+        "threshold": 0.5127,
+        "accuracy": 0.6400,
+        "recall": 0.5400,
+        "precision": 0.6750,
+        "f1": 0.6000
+      },
+      "3": {
+        "auc": 0.7960,
+        "threshold": 0.8423,
+        "accuracy": 0.7367,
+        "recall": 0.6200,
+        "precision": 0.8087,
+        "f1": 0.7019
+      },
+      "4": {
+        "auc": 0.8840,
+        "threshold": 0.9038,
+        "accuracy": 0.8133,
+        "recall": 0.7600,
+        "precision": 0.8507,
+        "f1": 0.8028
+      }
+    }
+  },
+  "iter": {
+    "arxiv": {
+      "1": {
+        "auc": 0.5330,
+        "threshold": -0.4502,
+        "accuracy": 0.5433,
+        "recall": 0.6733,
+        "precision": 0.5344,
+        "f1": 0.5959
+      },
+      "2": {
+        "auc": 0.4926,
+        "threshold": -0.6372,
+        "accuracy": 0.5467,
+        "recall": 0.7400,
+        "precision": 0.5337,
+        "f1": 0.6201
+      },
+      "3": {
+        "auc": 0.4541,
+        "threshold": -0.4915,
+        "accuracy": 0.5200,
+        "recall": 0.6267,
+        "precision": 0.5165,
+        "f1": 0.5663
+      },
+      "4": {
+        "auc": 0.4161,
+        "threshold": -2.0117,
+        "accuracy": 0.5033,
+        "recall": 0.9667,
+        "precision": 0.5017,
+        "f1": 0.6606
+      }
+    },
+    "wp": {
+      "1": {
+        "auc": 0.6377,
+        "threshold": -0.2207,
+        "accuracy": 0.6200,
+        "recall": 0.6933,
+        "precision": 0.6047,
+        "f1": 0.6460
+      },
+      "2": {
+        "auc": 0.5945,
+        "threshold": -0.06378,
+        "accuracy": 0.5867,
+        "recall": 0.5467,
+        "precision": 0.5942,
+        "f1": 0.5694
+      },
+      "3": {
+        "auc": 0.5979,
+        "threshold": -0.2583,
+        "accuracy": 0.5833,
+        "recall": 0.6333,
+        "precision": 0.5758,
+        "f1": 0.6032
+      },
+      "4": {
+        "auc": 0.6164,
+        "threshold": -0.1614,
+        "accuracy": 0.5900,
+        "recall": 0.6133,
+        "precision": 0.5860,
+        "f1": 0.5993
+      }
+    },
+    "xsum": {
+      "1": {
+        "auc": 0.5230,
+        "threshold": -0.3044,
+        "accuracy": 0.5367,
+        "recall": 0.7400,
+        "precision": 0.5261,
+        "f1": 0.6150
+      },
+      "2": {
+        "auc": 0.5067,
+        "threshold": 0.4238,
+        "accuracy": 0.5500,
+        "recall": 0.4800,
+        "precision": 0.5581,
+        "f1": 0.5161
+      },
+      "3": {
+        "auc": 0.5354,
+        "threshold": 0.2986,
+        "accuracy": 0.5533,
+        "recall": 0.5467,
+        "precision": 0.5541,
+        "f1": 0.5503
+      },
+      "4": {
+        "auc": 0.5573,
+        "threshold": -0.2639,
+        "accuracy": 0.5667,
+        "recall": 0.7933,
+        "precision": 0.5459,
+        "f1": 0.6467
+      }
+    },
+    "yelp": {
+      "1": {
+        "auc": 0.7044,
+        "threshold": 0.6621,
+        "accuracy": 0.6567,
+        "recall": 0.5133,
+        "precision": 0.7196,
+        "f1": 0.5992
+      },
+      "2": {
+        "auc": 0.6926,
+        "threshold": 0.5234,
+        "accuracy": 0.6567,
+        "recall": 0.5733,
+        "precision": 0.6880,
+        "f1": 0.6255
+      },
+      "3": {
+        "auc": 0.6712,
+        "threshold": 0.1757,
+        "accuracy": 0.6400,
+        "recall": 0.6933,
+        "precision": 0.6265,
+        "f1": 0.6582
+      },
+      "4": {
+        "auc": 0.6068,
+        "threshold": 0.4863,
+        "accuracy": 0.5933,
+        "recall": 0.4600,
+        "precision": 0.6273,
+        "f1": 0.5308
+      }
+    }
+  }
+}

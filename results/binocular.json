@@ -1,0 +1,278 @@
+{
+  "mix": {
+    "wp": {
+      "1": {
+        "auc": 0.5151,
+        "threshold": 0.01541,
+        "accuracy": 0.5500,
+        "recall": 0.5600,
+        "precision": 0.5490,
+        "f1": 0.5545
+      },
+      "2": {
+        "auc": 0.6120,
+        "threshold": 0.01457,
+        "accuracy": 0.6133,
+        "recall": 0.7000,
+        "precision": 0.5966,
+        "f1": 0.6442
+      },
+      "3": {
+        "auc": 0.7738,
+        "threshold": 0.04097,
+        "accuracy": 0.7267,
+        "recall": 0.7400,
+        "precision": 0.7208,
+        "f1": 0.7303
+      },
+      "4": {
+        "auc": 0.8966,
+        "threshold": 0.05342,
+        "accuracy": 0.8267,
+        "recall": 0.8467,
+        "precision": 0.8141,
+        "f1": 0.8301
+      }
+    },
+    "arxiv": {
+      "1": {
+        "auc": 0.5013,
+        "threshold": -0.01359,
+        "accuracy": 0.5300,
+        "recall": 0.6333,
+        "precision": 0.5249,
+        "f1": 0.5740
+      },
+      "2": {
+        "auc": 0.5080,
+        "threshold": -0.01271,
+        "accuracy": 0.5333,
+        "recall": 0.6333,
+        "precision": 0.5278,
+        "f1": 0.5758
+      },
+      "3": {
+        "auc": 0.5879,
+        "threshold": 0.04343,
+        "accuracy": 0.5700,
+        "recall": 0.3267,
+        "precision": 0.6364,
+        "f1": 0.4317
+      },
+      "4": {
+        "auc": 0.6501,
+        "threshold": -0.01256,
+        "accuracy": 0.6233,
+        "recall": 0.8133,
+        "precision": 0.5894,
+        "f1": 0.6835
+      }
+    },
+    "xsum": {
+      "1": {
+        "auc": 0.5365,
+        "threshold": -0.01016,
+        "accuracy": 0.5467,
+        "recall": 0.8267,
+        "precision": 0.5299,
+        "f1": 0.6458
+      },
+      "2": {
+        "auc": 0.5592,
+        "threshold": 0.04584,
+        "accuracy": 0.5767,
+        "recall": 0.4200,
+        "precision": 0.6117,
+        "f1": 0.4980
+      },
+      "3": {
+        "auc": 0.6215,
+        "threshold": 0.05376,
+        "accuracy": 0.6033,
+        "recall": 0.4200,
+        "precision": 0.6632,
+        "f1": 0.5143
+      },
+      "4": {
+        "auc": 0.6894,
+        "threshold": 0.06289,
+        "accuracy": 0.6667,
+        "recall": 0.4800,
+        "precision": 0.7660,
+        "f1": 0.5902
+      }
+    },
+    "yelp": {
+      "1": {
+        "auc": 0.5116,
+        "threshold": 0.04536,
+        "accuracy": 0.5467,
+        "recall": 0.2400,
+        "precision": 0.6207,
+        "f1": 0.3462
+      },
+      "2": {
+        "auc": 0.7456,
+        "threshold": 0.04290,
+        "accuracy": 0.7033,
+        "recall": 0.5733,
+        "precision": 0.7748,
+        "f1": 0.6590
+      },
+      "3": {
+        "auc": 0.8600,
+        "threshold": 0.04456,
+        "accuracy": 0.7933,
+        "recall": 0.7400,
+        "precision": 0.8284,
+        "f1": 0.7817
+      },
+      "4": {
+        "auc": 0.9521,
+        "threshold": 0.05347,
+        "accuracy": 0.9000,
+        "recall": 0.9267,
+        "precision": 0.8797,
+        "f1": 0.9026
+      }
+    }
+  },
+  "iter": {
+    "arxiv": {
+      "1": {
+        "auc": 0.5291,
+        "threshold": -0.003146,
+        "accuracy": 0.5533,
+        "recall": 0.6267,
+        "precision": 0.5465,
+        "f1": 0.5839
+      },
+      "2": {
+        "auc": 0.4961,
+        "threshold": -0.01403,
+        "accuracy": 0.5400,
+        "recall": 0.6533,
+        "precision": 0.5326,
+        "f1": 0.5868
+      },
+      "3": {
+        "auc": 0.4378,
+        "threshold": -0.02323,
+        "accuracy": 0.5000,
+        "recall": 0.6467,
+        "precision": 0.5000,
+        "f1": 0.5640
+      },
+      "4": {
+        "auc": 0.4073,
+        "threshold": -0.1075,
+        "accuracy": 0.5000,
+        "recall": 0.9933,
+        "precision": 0.5000,
+        "f1": 0.6652
+      }
+    },
+    "wp": {
+      "1": {
+        "auc": 0.5789,
+        "threshold": 0.007875,
+        "accuracy": 0.5867,
+        "recall": 0.7067,
+        "precision": 0.5699,
+        "f1": 0.6310
+      },
+      "2": {
+        "auc": 0.5495,
+        "threshold": 0.009000,
+        "accuracy": 0.5633,
+        "recall": 0.6533,
+        "precision": 0.5537,
+        "f1": 0.5994
+      },
+      "3": {
+        "auc": 0.5542,
+        "threshold": -0.003556,
+        "accuracy": 0.5733,
+        "recall": 0.8067,
+        "precision": 0.5500,
+        "f1": 0.6541
+      },
+      "4": {
+        "auc": 0.5722,
+        "threshold": 0.01746,
+        "accuracy": 0.5833,
+        "recall": 0.6067,
+        "precision": 0.5796,
+        "f1": 0.5928
+      }
+    },
+    "xsum": {
+      "1": {
+        "auc": 0.5021,
+        "threshold": -0.01314,
+        "accuracy": 0.5200,
+        "recall": 0.7933,
+        "precision": 0.5129,
+        "f1": 0.6230
+      },
+      "2": {
+        "auc": 0.4922,
+        "threshold": 0.06358,
+        "accuracy": 0.5100,
+        "recall": 0.1667,
+        "precision": 0.5319,
+        "f1": 0.2538
+      },
+      "3": {
+        "auc": 0.5368,
+        "threshold": -0.007713,
+        "accuracy": 0.5533,
+        "recall": 0.8267,
+        "precision": 0.5345,
+        "f1": 0.6492
+      },
+      "4": {
+        "auc": 0.5557,
+        "threshold": -0.02981,
+        "accuracy": 0.5567,
+        "recall": 0.9533,
+        "precision": 0.5316,
+        "f1": 0.6826
+      }
+    },
+    "yelp": {
+      "1": {
+        "auc": 0.7571,
+        "threshold": 0.04151,
+        "accuracy": 0.7033,
+        "recall": 0.5867,
+        "precision": 0.7652,
+        "f1": 0.6642
+      },
+      "2": {
+        "auc": 0.7519,
+        "threshold": 0.03009,
+        "accuracy": 0.7033,
+        "recall": 0.6933,
+        "precision": 0.7075,
+        "f1": 0.7003
+      },
+      "3": {
+        "auc": 0.7397,
+        "threshold": 0.03749,
+        "accuracy": 0.6900,
+        "recall": 0.5800,
+        "precision": 0.7436,
+        "f1": 0.6517
+      },
+      "4": {
+        "auc": 0.6852,
+        "threshold": 0.04534,
+        "accuracy": 0.6467,
+        "recall": 0.4400,
+        "precision": 0.7500,
+        "f1": 0.5546
+      }
+    }
+  }
+}
