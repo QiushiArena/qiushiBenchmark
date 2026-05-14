@@ -66,6 +66,7 @@ def hybrid_metric(item):
     for level in levels:
         results[level] = F1_WEIGHT * len(item) / (EPS + sum_div_f1[level]) + AUC_WEIGHT * sum_auc[level] / (EPS + len(item))
     
+    print(f"hybrid metric: {results}")
     return results
 
 def compute_rub_score(
@@ -107,6 +108,8 @@ def compute_rub_score(
     else:
         # linear form (less stable, not recommended)
         rub_score = 1.0 - penalty
+
+    print(f"a_mix: {slope_mix:.4f}, a_iter: {slope_iter:.4f}, var_mix: {variance_mix:.6f}, var_iter: {variance_iter:.6f}, rub_score: {rub_score:.4f}")
 
     return rub_score
 
@@ -168,6 +171,7 @@ for file_name in os.listdir(RESULT_DIR):
         continue
 
     detector_name = os.path.splitext(file_name)[0]
+    print(f"Processing {detector_name}...")
 
     file_path = os.path.join(
         RESULT_DIR,
@@ -230,3 +234,99 @@ df.to_csv(
 )
 
 print("\nSaved to leaderboard.csv")
+
+import matplotlib.pyplot as plt
+
+# 收集数据
+detector_mix_scores = {}
+detector_iter_scores = {}
+
+for file_name in os.listdir(RESULT_DIR):
+    if not file_name.endswith(".json"):
+        continue
+    detector_name = os.path.splitext(file_name)[0]
+    file_path = os.path.join(RESULT_DIR, file_name)
+    with open(file_path, "r") as f:
+        data = json.load(f)
+    detector_mix_scores[detector_name] = hybrid_metric(data["mix"])
+    detector_iter_scores[detector_name] = hybrid_metric(data["iter"])
+
+# 准备绘图
+levels = ["1", "2", "3", "4"]
+x = [1, 2, 3, 4]
+detector_names = list(detector_mix_scores.keys())
+
+# 使用鲜艳、区分度大的颜色：Set1 调色板（最多9种颜色，不足则循环）
+# 如果检测器超过9个，改用 Set3 或 tab20
+if len(detector_names) <= 9:
+    colors = plt.cm.Set1(np.linspace(0, 1, len(detector_names)))
+else:
+    colors = plt.cm.tab20(np.linspace(0, 1, len(detector_names)))
+
+plt.figure(figsize=(7, 4))
+
+# 为每个检测器绘制两条曲线（同色，mix实线，iter虚线）
+for idx, det in enumerate(detector_names):
+    color = colors[idx]
+    mix_vals = [detector_mix_scores[det][lv] for lv in levels]
+    iter_vals = [detector_iter_scores[det][lv] for lv in levels]
+    # mix: 实线，圆圈标记
+    plt.plot(x, mix_vals, marker='o', linestyle='-', linewidth=2.5,
+             markersize=8, color=color, label=f"{det} (mix)")
+    # iter: 虚线，方块标记
+    plt.plot(x, iter_vals, marker='s', linestyle='--', linewidth=2.5,
+             markersize=8, color=color, label=f"{det} (iter)")
+
+plt.xlabel("Difficulty Level", fontsize=12)
+plt.ylabel("Hybrid Metric Score", fontsize=12)
+plt.title("Performance Comparison: Mix (solid) vs Iter (dashed)", fontsize=16, fontweight='bold')
+plt.xticks(x, levels)
+# 图例置于图外右侧，避免遮挡
+plt.legend(bbox_to_anchor=(1.02, 1), loc='upper left', fontsize=9)
+plt.grid(True, linestyle='--', alpha=0.5)
+plt.tight_layout()
+plt.savefig("leaderboard_mix_iter_lineplot.png", dpi=150)
+plt.show()
+print("\n折线图已保存为 leaderboard_mix_iter_lineplot.png")
+
+
+# 为每个检测器绘制曲线mix
+plt.figure(figsize=(7, 4))
+for idx, det in enumerate(detector_names):
+    color = colors[idx]
+    mix_vals = [detector_mix_scores[det][lv] for lv in levels]
+    # mix: 实线，圆圈标记
+    plt.plot(x, mix_vals, marker='o', linestyle='-', linewidth=2.5,
+             markersize=8, color=color, label=f"{det}")
+
+plt.xlabel("Level", fontsize=12)
+plt.ylabel("Hybrid Metric Score", fontsize=12)
+plt.title("Performance Comparison: Mix", fontsize=16, fontweight='bold')
+plt.xticks(x, levels)
+# 图例置于图外右侧，避免遮挡
+plt.legend(bbox_to_anchor=(1.02, 1), loc='upper left', fontsize=9)
+plt.grid(True, linestyle='--', alpha=0.5)
+plt.tight_layout()
+plt.savefig("leaderboard_mix.png", dpi=150)
+plt.show()
+print("\n折线图已保存为 leaderboard_mix.png")
+
+# 为每个检测器绘制两条曲线iter
+plt.figure(figsize=(7, 4))
+for idx, det in enumerate(detector_names):
+    color = colors[idx]
+    iter_vals = [detector_iter_scores[det][lv] for lv in levels]
+    plt.plot(x, iter_vals, marker='o', linestyle='-', linewidth=2.5,
+             markersize=8, color=color, label=f"{det}")
+
+plt.xlabel("Level", fontsize=12)
+plt.ylabel("Hybrid Metric Score", fontsize=12)
+plt.title("Performance Comparison: Iter", fontsize=16, fontweight='bold')
+plt.xticks(x, levels)
+# 图例置于图外右侧，避免遮挡
+plt.legend(bbox_to_anchor=(1.02, 1), loc='upper left', fontsize=9)
+plt.grid(True, linestyle='--', alpha=0.5)
+plt.tight_layout()
+plt.savefig("leaderboard_iter.png", dpi=150)
+plt.show()
+print("\n折线图已保存为 leaderboard_iter.png")
